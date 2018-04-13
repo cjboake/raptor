@@ -13,7 +13,8 @@ Once I can accomplish these things with it, it will
 have the potential to expand into something much more
 interesting.
 
-
+This server will hopefully grow into as full service project
+one day and be open for use by other peopel.
 
 
 
