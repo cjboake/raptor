@@ -1,0 +1,12 @@
+---------------------------------
+STATSERVE - A fun webserver
+=================================
+_________________________________
+
+-> Use 'fork', not 'select' and look up: accept, bind,
+listen, connect, socket, shutdown
+-> Research 'echo server in C'
+-> Beej's guide to network programming
+-> Look up 'nc'
+
+
