@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <unistd.h>
+#include <signal.h>
 #include "dbg.h"
 #include <stdlib.h>
 #include <sys/types.h>
@@ -12,6 +13,12 @@
 #define BACKLOG 10   // max connections
 #define BUFSIZE 1024
 #define LOCALHOST "127.0.0.1"
+
+void handle_sigchild(int sig) {
+    sig = 0; // ignore it
+    while(waitpid(-1, NULL, WNOHANG) > 0) {
+    }
+}
 
 int attempt_listen(struct addrinfo *info)
 {
@@ -88,10 +95,13 @@ void client_handler(char str[], int comm_fd)
 
 int run_server()
 {
+    struct sigaction sa = {
+        .sa_handler = handle_sigchild,
+        .sa_flags = SA_RESTART | SA_NOCLDSTOP
+    };
+
+    int rc = 0;
     int sockfd;
-    struct addrinfo hints;
-    struct addrinfo *servinfo;
-    struct sockaddr_in servaddr; 
   
     struct sockaddr_in client_addr;
     socklen_t sin_size = sizeof(client_addr);
@@ -104,6 +114,11 @@ int run_server()
 
     printf("Hello -> Welcome to Velociraptor\n");
 
+    // create a sigaction that handles SIGCHLD
+    sigemptyset(&sa.sa_mask);
+    rc = sigaction(SIGCHLD, &sa, 0);
+    check(rc != -1, "Failed to setup signal handler for child processes.");
+
     sockfd = server_listen(ho, po); 
 
     while(1)
@@ -113,7 +128,19 @@ int run_server()
 
         debug("-> Client Connection Made <-");
 
-        client_handler(str, comm_fd);
+        rc = fork();
+        if(rc == 0) {
+            // child process
+            close(sockfd);
+            // handle the client
+            client_handler(str, comm_fd);
+            exit(0);
+        } else {
+            //server process
+            close(comm_fd);
+        }
+        
+        //client_handler(str, comm_fd);
 
     } 
     
@@ -126,7 +153,10 @@ error:
 
 int main(int argc, char *argv[])
 {
-    run_server();
+    int rc = 0;
+    rc = run_server();
+    
+    check(rc >= 0, "Server failed to run.");
 
     return 1;
 error:
