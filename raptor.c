@@ -78,6 +78,14 @@ error:
     return sockfd;
 }
 
+void client_handler(char str[], int comm_fd)
+{
+    bzero( str, 100);
+    read( comm_fd, str, 100);
+    printf("Echoing back - %s",str);
+    write(comm_fd, str, strlen(str)+1);
+}
+
 int run_server()
 {
     int sockfd;
@@ -103,10 +111,10 @@ int run_server()
         comm_fd = accept(sockfd, (struct sockaddr *)&client_addr, &sin_size);
         check(comm_fd >= 0, "Failed to accept connection.");
 
-        bzero( str, 100);
-        read( comm_fd, str, 100);
-        printf("Echoing back - %s",str);
-        write(comm_fd, str, strlen(str)+1);
+        debug("-> Client Connection Made <-");
+
+        client_handler(str, comm_fd);
+
     } 
     
     
