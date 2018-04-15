@@ -80,48 +80,31 @@ error:
 
 int run_server()
 {
-    int sockfd, newfd;
+    int sockfd;
     struct addrinfo hints;
     struct addrinfo *servinfo;
     struct sockaddr_in servaddr; 
-    
+  
+    struct sockaddr_in client_addr;
+    socklen_t sin_size = sizeof(client_addr);
+
+    const char *ho = "127.0.0.1";
+    const char *po = "7899";
+
     char str[100];
-    int listenfd; 
     int comm_fd;
-    int optval;
-    int status;
 
     printf("Hello -> Welcome to Velociraptor\n");
 
-    // create socket
-    listenfd = socket(AF_INET, SOCK_STREAM, 0);
-    check(listenfd > 1, "Failed to open socket.");
-  
-    bzero(&servaddr, sizeof(servaddr));
-
-    servaddr.sin_family = AF_INET;
-    servaddr.sin_addr.s_addr = htons(INADDR_ANY);
-    servaddr.sin_port = htons(PORT);
-
-    // don't wanna wait 20 secods
-    optval = 1;
-    setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, 
-            (const void *)&optval, sizeof(int));
-
-    // bind that shit
-    bind(listenfd,(struct sockaddr *) &servaddr, sizeof(servaddr));
-    
-    listen(listenfd, 10);
-
-    comm_fd = accept(listenfd, (struct sockaddr*) NULL, NULL);
-    check(comm_fd >= 0, "Failed to accept connection.");
-
-    debug("-> Client connected <-");
+    sockfd = server_listen(ho, po); 
 
     while(1)
     {
+        comm_fd = accept(sockfd, (struct sockaddr *)&client_addr, &sin_size);
+        check(comm_fd >= 0, "Failed to accept connection.");
+
         bzero( str, 100);
-        read(comm_fd,str,100);
+        read( comm_fd, str, 100);
         printf("Echoing back - %s",str);
         write(comm_fd, str, strlen(str)+1);
     } 
