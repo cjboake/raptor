@@ -18,5 +18,12 @@ Outline of how to make a server:
 -> the getaddrinfo method is a way of getting this struct, you give it the IP, port numbers, etc.
 -> Once you have a socket, you'll need to run a loop that listens for attemps to connect.
 
+Some notes from Zed's video:
+===========================
 
-
+-> create a sigaction that hangles SIGCHILD
+-> listen on the port of the given host
+-> Accept a client connection, then fork
+-> if zero, then child
+-> else server
+-> do a hangler, so that when children die you wait on them
