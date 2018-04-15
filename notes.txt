@@ -10,3 +10,13 @@ listen, connect, socket, shutdown
 -> Look up 'nc'
 
 
+Outline of how to make a server:
+
+-> Create a socket. This is a file that that acts as an endpoint for connecting an IP on a certain port.
+-> You're going to need to bind this socket to a port. This is how you communicate with the machine.
+-> To do this, you need a struct_info of some variety to provide the details of how your socket is going to operate.
+-> the getaddrinfo method is a way of getting this struct, you give it the IP, port numbers, etc.
+-> Once you have a socket, you'll need to run a loop that listens for attemps to connect.
+
+
+

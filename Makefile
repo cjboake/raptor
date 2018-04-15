@@ -1,5 +1,5 @@
 CFLAGS=-Wall -g
 
 clean:
-	rm -f statserve
+	rm -f raptor
 	rm -rf `find . -name "*.dSYM" -print`
