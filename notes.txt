@@ -27,3 +27,5 @@ Some notes from Zed's video:
 -> if zero, then child
 -> else server
 -> do a hangler, so that when children die you wait on them
+
+* Look into killing signal process children (waitpid, etc.)
