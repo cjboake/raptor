@@ -139,26 +139,10 @@ int run_server()
             //server process
             close(comm_fd);
         }
-        
-        //client_handler(str, comm_fd);
-
     } 
-    
     
     return 1;
 
 error:
     return -1;
 }
-
-//int main(int argc, char *argv[])
-//{
-//    int rc = 0;
-//    rc = run_server();
-    
-//    check(rc >= 0, "Server failed to run.");
-
-//    return 1;
-//error:
-//    return -1;
-//}

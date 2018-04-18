@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "../src/dbg.h"
+#include "dbg.h"
 #include "raptor.h"
 
 int main(int argc, char *argv[])
