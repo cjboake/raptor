@@ -3,6 +3,6 @@
 
 int run_server();
 int server_listen(const char *host, const char *port);
-int attempt_listen(struct addrinfo *info);
+//int attempt_listen(struct addrinfo *info);
 
 #endif

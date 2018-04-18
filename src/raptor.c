@@ -151,14 +151,14 @@ error:
     return -1;
 }
 
-int main(int argc, char *argv[])
-{
-    int rc = 0;
-    rc = run_server();
+//int main(int argc, char *argv[])
+//{
+//    int rc = 0;
+//    rc = run_server();
     
-    check(rc >= 0, "Server failed to run.");
+//    check(rc >= 0, "Server failed to run.");
 
-    return 1;
-error:
-    return -1;
-}
+//    return 1;
+//error:
+//    return -1;
+//}
