@@ -3,6 +3,8 @@ STATSERVE - A fun webserver
 =================================
 _________________________________
 
+*This would be a good place to pick up for a new project*
+
 -> Use 'fork', not 'select' and look up: accept, bind,
 listen, connect, socket, shutdown
 -> Research 'echo server in C'
