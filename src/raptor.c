@@ -9,15 +9,85 @@
 #include <string.h>
 #include "raptor.h"
 
+#include "./lib/ringbuffer.h"
+
 #define PORT 7899    // port to bind to
 #define BACKLOG 10   // max connections
 #define BUFSIZE 1024
 #define LOCALHOST "127.0.0.1"
 
+#define RB_SIZE 1024 * 10
+
 void handle_sigchild(int sig) {
     sig = 0; // ignore it
     while(waitpid(-1, NULL, WNOHANG) > 0) {
     }
+}
+
+// look up: send(), recv(), write()
+
+int read_some(RingBuffer * buffer, int fd, int is_socket)
+{
+    int rc = 0;
+
+    // Check the validity/contents of the data structure
+    if(RingBuffer_available_data(buffer) == 0) {
+        buffer->start = buffer->end = 0;
+    }
+
+    // Check the validity/contents of the data structure
+    if(is_socket) {
+        rc = recv(fd, RingBuffer_starts_at(buffer), 
+                RingBuffer_available_space(buffer), 0);        
+    }
+    
+    bstring data = NULL;
+    
+    check_debug(RingBuffer_gets != NULL, "The ringbuffer read_some is null.\n");
+
+    data = RingBuffer_gets(buffer, 0);
+   
+    printf("Raptor echo -> ");
+    
+    check(rc >= 0, "Ringbuffer read failed.");
+
+    // save to the data data structure
+    RingBuffer_commit_write(buffer, rc);
+    check(RingBuffer_empty(buffer) != 0, "The ringbuffer is empty.\n");   
+
+    return rc;
+error:
+    return -1;
+}
+
+int write_some(RingBuffer * buffer, int fd, int is_socket)
+{
+    int rc = 0;
+    // take in the data structure
+    bstring data = RingBuffer_get_all(buffer);
+    
+    // write that shit - Note that write takes multiple params!
+    rc = write(fd, bdata(data), blength(data));
+
+    bdestroy(data);
+    return rc;
+error:
+    return -1;
+}
+
+int parse_line(RingBuffer *recv_rb, RingBuffer *send_rb)
+{
+    int rc = 0;
+    bstring data = NULL;
+    data = RingBuffer_gets(recv_rb, RingBuffer_available_data(recv_rb));
+   
+    //now fucking write it to the send_rb
+    rc = RingBuffer_write(send_rb, bdata(data), blength(data));
+
+    return rc;
+error:
+    return -1;
+
 }
 
 int attempt_listen(struct addrinfo *info)
@@ -85,12 +155,20 @@ error:
     return sockfd;
 }
 
-void client_handler(char str[], int comm_fd)
+void client_handler(int comm_fd)
 {
-    bzero( str, 100);
-    read( comm_fd, str, 100);
-    printf("Echoing back - %s",str);
-    write(comm_fd, str, strlen(str)+1);
+    RingBuffer *send_rb = RingBuffer_create(RB_SIZE);
+    RingBuffer *recv_rb = RingBuffer_create(RB_SIZE);
+    
+    //read( comm_fd, str, 100);
+    read_some(recv_rb, comm_fd, 1);
+
+    // haha, missed this bitch
+    parse_line(recv_rb, send_rb);    
+
+    //write(comm_fd, str, strlen(str)+1);
+    write_some(send_rb, comm_fd, 1);
+
 }
 
 int run_server()
@@ -133,7 +211,7 @@ int run_server()
             // child process
             close(sockfd);
             // handle the client
-            client_handler(str, comm_fd);
+            client_handler(comm_fd);
             exit(0);
         } else {
             //server process

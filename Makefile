@@ -1,6 +1,6 @@
 CFLAGS=-g -O2 -Wall -Wextra -I/usr/local/include -Isrc -rdynamic $(OPTFLAGS)
-LIBS= $(OPTLIBS)
-LDFLAGS=-L/usr/local/lib $(LIBS)
+LIBS=-llcthw $(OPTLIBS)
+LDFLAGS=-L/usr/local/lib/ $(LIBS)
 PREFIX?=/usr/local
 
 SOURCES=$(wildcard src/**/*.c src/*.c bin/*.c)
