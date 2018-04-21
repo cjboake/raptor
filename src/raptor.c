@@ -106,7 +106,7 @@ void client_handler(int comm_fd)
 
 }
 
-int run_server()
+int run_server(const char *host, const char *port)
 {
     struct sigaction sa = {
         .sa_handler = handle_sigchild,
@@ -119,8 +119,8 @@ int run_server()
     struct sockaddr_in client_addr;
     socklen_t sin_size = sizeof(client_addr);
 
-    const char *ho = "127.0.0.1";
-    const char *po = "7899";
+    //const char *ho = "127.0.0.1";
+    //onst char *po = "7899";
 
     char str[100];
     int comm_fd;
@@ -132,7 +132,7 @@ int run_server()
     rc = sigaction(SIGCHLD, &sa, 0);
     check(rc != -1, "Failed to setup signal handler for child processes.");
 
-    sockfd = server_listen(ho, po); 
+    sockfd = server_listen(host, port); 
 
     while(1)
     {

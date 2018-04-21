@@ -3,8 +3,6 @@ STATSERVE - A fun webserver
 =================================
 _________________________________
 
-*This would be a good place to pick up for a new project*
-
 -> Use 'fork', not 'select' and look up: accept, bind,
 listen, connect, socket, shutdown
 -> Research 'echo server in C'
@@ -28,6 +26,14 @@ Some notes from Zed's video:
 -> Accept a client connection, then fork
 -> if zero, then child
 -> else server
--> do a hangler, so that when children die you wait on them
+-> do a handler, so that when children die you wait on them
 
 * Look into killing signal process children (waitpid, etc.)
+
+First Steps For Statistics Server
+================================
+1. Create a data structure for holding information from each of the commands
+2. Write a protocol parse to handle it and fill in the data
+3. Pass the data to a function that knows how to do the command
+
+
