@@ -53,7 +53,7 @@ Core Components
 
 Control Flow
 ============
-1. There is an input command, with a corresponding number (Check to make sure that's the case!)
+1. There is an input command, the name of the stat, and a corresponding number (Check to make sure that's the case!)
 2. This will then hit a parser that takes the command and data, and shoots it to the correct function
    * 2.b: This parser might take the shape of a URL router
    * 2.c: It will have to decide which CRUD command is being asked for
@@ -62,5 +62,47 @@ Control Flow
         - Although Stats has a "Create" that will probably call our Create
 3. This Data will then be saved into (probably) a hashmap for quick reads.
 4. A BSTree could be useful for certain calls that take place across samples
+
+
+Sketch For Statistics Protocol
+==============================
+* Basic Required Commands:
+    1. Create - add a new statistic, with a name now (may need to change the stat struct)
+    2. Mean - get the mean of a statistic
+    3. UpSample - what we're doing here is updating, adding a new sample
+    4. Dump - this a Read of a particular Static
+        - List: dump every statistic in memory
+
+* The first three are going to need two paramters: Name of statistic, and it's values
+* Let's just parse as plaintext first and then implement the URL routes (although that is better)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

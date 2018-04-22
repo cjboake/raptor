@@ -11,6 +11,10 @@
 #include "net.h"
 
 #include "./lib/ringbuffer.h"
+#include "./lib/hashmap.h"
+#include "./lib/hashmap_algos.h"
+#include "./lib/stats.h"
+#include "./lib/list.h"
 
 #define PORT 7899    // port to bind to
 #define BACKLOG 10   // max connections
@@ -18,6 +22,45 @@
 #define LOCALHOST "127.0.0.1"
 
 #define RB_SIZE 1024 * 10
+
+void create_stat(struct bstrList *blist)
+{
+
+
+
+}
+
+int get_mean(struct bstrList *blist)
+{
+
+
+
+    return 1;
+}
+
+int update_sample(struct bstrList *blist)
+{
+
+
+
+
+    return 1;
+}
+
+int delete_sample(struct bstrList *bstr)
+{
+
+
+
+    return 1;
+}
+
+int dump()
+{
+
+
+    return 1;
+}
 
 void handle_sigchild(int sig) {
     sig = 0; // ignore it
@@ -90,19 +133,76 @@ error:
     return sockfd;
 }
 
+int input_parser(RingBuffer *recv_rb, RingBuffer *send_rb)
+{
+    //struct bstrList blist;
+    List *inputs = List_create();
+    int rc = 0;
+    bstring data = NULL;
+   
+    bstring name = NULL;
+    bstring command = NULL;
+    bstring numbers = NULL;
+
+    data = RingBuffer_gets(recv_rb, RingBuffer_available_data(recv_rb));
+    check(data != NULL, "Data string is null.");
+
+    const char *create = "create";
+    const char *mean = "mean";
+    const char *upsample = "upsample";
+    const char *deletestr = "delete";
+    const char *dumpstr = "dump";
+
+    // we read the rb, and then have a string to handle
+    // remember 'biseg' for string comparison
+
+    struct bstrList *blist = bsplit(data, '\0');
+
+    if(binstr(data, 0, bfromcstr(create))) {
+        create_stat(blist);
+    } else if(binstr(data, 0, bfromcstr(mean))) {
+        get_mean(blist);
+    } else if(binstr(data, 0, bfromcstr(upsample))) {
+        update_sample(blist);
+    } else if(binstr(data, 0, bfromcstr(dumpstr))) {
+        dump();
+    } else if(binstr(data, 0, bfromcstr(deletestr))) {
+        delete_sample(blist);
+    }
+
+
+    //now fucking write it to the send_rb
+    rc = RingBuffer_write(send_rb, bdata(data), blength(data));
+
+    return rc;
+error:
+    return -1;
+}
+
 void client_handler(int comm_fd)
 {
     RingBuffer *send_rb = RingBuffer_create(RB_SIZE);
     RingBuffer *recv_rb = RingBuffer_create(RB_SIZE);
-    
-    //read( comm_fd, str, 100);
+   
+    // echo functions
     read_some(recv_rb, comm_fd, 1);
-
-    // haha, missed this bitch
     parse_line(recv_rb, send_rb);    
-
-    //write(comm_fd, str, strlen(str)+1);
     write_some(send_rb, comm_fd, 1);
+
+    // hit the parser so that we can read the command
+        // these inputs are going to be read off the ringbuffer
+    input_parser(recv_rb, send_rb);
+
+    // The Parser will then route you to one of our four CRUD operations
+        // it may/may not make sense to externalize the data structure 
+        // and these operations
+    
+    // Seperately, exists our Stats engine, which will serve numeric functions
+        // It will simply receive and return data to the CRUD functions,
+        // which will access the data structures
+    
+    // ultimately, the return values will be written to the RingBuffer and 
+    // sent back to the client ayyy
 
 }
 
@@ -118,9 +218,6 @@ int run_server(const char *host, const char *port)
   
     struct sockaddr_in client_addr;
     socklen_t sin_size = sizeof(client_addr);
-
-    //const char *ho = "127.0.0.1";
-    //onst char *po = "7899";
 
     char str[100];
     int comm_fd;
@@ -139,7 +236,7 @@ int run_server(const char *host, const char *port)
         comm_fd = accept(sockfd, (struct sockaddr *)&client_addr, &sin_size);
         check(comm_fd >= 0, "Failed to accept connection.");
 
-        debug("-> Client Connection Made <-");
+        debug("-> Client Connection Made <-\n");
 
         rc = fork();
         if(rc == 0) {
