@@ -2,7 +2,7 @@
 #define _DArray_h
 #include <stdlib.h>
 #include <assert.h>
-#include "../src/dbg.h"
+#include "../dbg.h"
 
 typedef struct DArray {
     int end;

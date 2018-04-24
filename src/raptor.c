@@ -15,11 +15,18 @@
 #include "./lib/hashmap_algos.h"
 #include "./lib/stats.h"
 #include "./lib/list.h"
+#include "./lib/tstree.h"
 
 #define PORT 7899    // port to bind to
 #define BACKLOG 10   // max connections
 #define BUFSIZE 1024
 #define LOCALHOST "127.0.0.1"
+
+#define CREATE "/create"
+#define MEAN "/mean"
+#define UPSAMP "/upsample"
+#define DELETE "/delete"
+#define DUMP "/dump"
 
 #define RB_SIZE 1024 * 10
 
@@ -55,7 +62,7 @@ int delete_sample(struct bstrList *bstr)
     return 1;
 }
 
-int dump()
+int dump(struct bstrList *bstr)
 {
 
 
@@ -133,65 +140,54 @@ error:
     return sockfd;
 }
 
-int input_parser(RingBuffer *recv_rb, RingBuffer *send_rb)
+void add_routes(TSTree * tree, List routes)
 {
-    //struct bstrList blist;
-    List *inputs = List_create();
-    int rc = 0;
+    //build the TSTree in here
+
+}
+
+struct bstrList *input_parser(RingBuffer *recv_rb)
+{
     bstring data = NULL;
    
-    bstring name = NULL;
-    bstring command = NULL;
-    bstring numbers = NULL;
-
     data = RingBuffer_gets(recv_rb, RingBuffer_available_data(recv_rb));
-    check(data != NULL, "Data string is null.");
-
-    const char *create = "create";
-    const char *mean = "mean";
-    const char *upsample = "upsample";
-    const char *deletestr = "delete";
-    const char *dumpstr = "dump";
-
-    // we read the rb, and then have a string to handle
-    // remember 'biseg' for string comparison
 
     struct bstrList *blist = bsplit(data, '\0');
+    return blist;
+}
 
-    if(binstr(data, 0, bfromcstr(create))) {
-        create_stat(blist);
-    } else if(binstr(data, 0, bfromcstr(mean))) {
-        get_mean(blist);
-    } else if(binstr(data, 0, bfromcstr(upsample))) {
-        update_sample(blist);
-    } else if(binstr(data, 0, bfromcstr(dumpstr))) {
-        dump();
-    } else if(binstr(data, 0, bfromcstr(deletestr))) {
+void url_router(TSTree * routes, struct bstrList *blist)
+{
+    bstring url = blist->entry[0];
+    bstring route = TSTree_search(routes, bdata(url), blength(url));
+
+    if(route == bfromcstr(CREATE)){
+        create_stat(blist);        
+    } else if(route == bfromcstr(MEAN)){
+        get_mean(blist); 
+    } else if(route == bfromcstr(UPSAMP)){
+        update_sample(blist); 
+    } else if(route == bfromcstr(DELETE)){
         delete_sample(blist);
+    } else if(route == bfromcstr(DUMP)){
+        dump(blist); 
     }
-
-
-    //now fucking write it to the send_rb
-    rc = RingBuffer_write(send_rb, bdata(data), blength(data));
-
-    return rc;
-error:
-    return -1;
 }
 
 void client_handler(int comm_fd)
 {
     RingBuffer *send_rb = RingBuffer_create(RB_SIZE);
     RingBuffer *recv_rb = RingBuffer_create(RB_SIZE);
-   
+    TSTree *routes = NULL;
+
     // echo functions
     read_some(recv_rb, comm_fd, 1);
     parse_line(recv_rb, send_rb);    
     write_some(send_rb, comm_fd, 1);
 
     // hit the parser so that we can read the command
-        // these inputs are going to be read off the ringbuffer
-    input_parser(recv_rb, send_rb);
+    struct bstrList *blist = input_parser(recv_rb);
+    url_router(routes, blist);
 
     // The Parser will then route you to one of our four CRUD operations
         // it may/may not make sense to externalize the data structure 
@@ -203,6 +199,10 @@ void client_handler(int comm_fd)
     
     // ultimately, the return values will be written to the RingBuffer and 
     // sent back to the client ayyy
+
+    //now fucking write it to the send_rb
+    
+    //rc = RingBuffer_write(send_rb, bdata(data), blength(data));
 
 }
 

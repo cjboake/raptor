@@ -64,6 +64,11 @@ Control Flow
 4. A BSTree could be useful for certain calls that take place across samples
 
 
+- Each input has:
+    * URL (command)
+    * Name (for sample)
+    * Data (numbers) 
+
 Sketch For Statistics Protocol
 ==============================
 * Basic Required Commands:
@@ -76,33 +81,6 @@ Sketch For Statistics Protocol
 * The first three are going to need two paramters: Name of statistic, and it's values
 * Let's just parse as plaintext first and then implement the URL routes (although that is better)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+- Goal for today:
+    * Get the parser working
+    * show this by printing messages based on function hit

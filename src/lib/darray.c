@@ -1,15 +1,12 @@
-#include <stdio.h>
 #include "darray.h"
 #include <assert.h>
-
-// est
 
 DArray *DArray_create(size_t element_size, size_t initial_max)
 {
     DArray *array = malloc(sizeof(DArray));
     check_mem(array);
     array->max = initial_max;
-    check(array->max > 0, "You must set an inital max > 0.");
+    check(array->max > 0, "You must set an initial_max > 0.");
 
     array->contents = calloc(initial_max, sizeof(void *));
     check_mem(array->contents);
@@ -46,7 +43,7 @@ static inline int DArray_resize(DArray * array, size_t newsize)
     void *contents = realloc(
             array->contents, array->max * sizeof(void *));
     // check contents and assume realloc doesn't harm the original on error
-    
+
     check_mem(contents);
 
     array->contents = contents;
@@ -72,14 +69,10 @@ error:
 
 int DArray_contract(DArray * array)
 {
-    int new_size = array->end < (int)array->expand_rate ?
-        (int)array->expand_rate : array->end;
+    int new_size = array->end < (int)array->expand_rate ? 
+            (int)array->expand_rate : array->end;
 
     return DArray_resize(array, new_size + 1);
-    return 0;
-
-error:
-    return -1;
 }
 
 void DArray_destroy(DArray * array)
