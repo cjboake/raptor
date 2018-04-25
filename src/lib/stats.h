@@ -2,6 +2,7 @@
 #define lcthw_stats_h
 
 typedef struct Stats {
+    char *name;
     double sum;
     double sumsq;
     unsigned long n;
@@ -9,7 +10,7 @@ typedef struct Stats {
     double max;
 } Stats;
 
-Stats *Stats_recreate(double sum, double sumsq, unsigned long n,
+Stats *Stats_recreate(char *name, double sum, double sumsq, unsigned long n,
         double min, double max);
 
 Stats *Stats_create();

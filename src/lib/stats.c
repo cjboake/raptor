@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include "../src/dbg.h"
 
-Stats *Stats_recreate(double sum, double sumsq, unsigned long n,
+Stats *Stats_recreate(char *name, double sum, double sumsq, unsigned long n,
         double min, double max)
 {
     Stats *st = malloc(sizeof(Stats));
@@ -21,9 +21,9 @@ error:
     return NULL;
 }
 
-Stats *Stats_create()
+Stats *Stats_create(char *name)
 {
-    return Stats_recreate(0.0, 0.0, 0L, 0.0, 0.0);
+    return Stats_recreate(name, 0.0, 0.0, 0L, 0.0, 0.0);
 }
 
 double Stats_mean(Stats * st)

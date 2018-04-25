@@ -22,49 +22,40 @@
 #define BUFSIZE 1024
 #define LOCALHOST "127.0.0.1"
 
-#define CREATE "/create"
-#define MEAN "/mean"
-#define UPSAMP "/upsample"
-#define DELETE "/delete"
-#define DUMP "/dump"
-
 #define RB_SIZE 1024 * 10
 
 void create_stat(struct bstrList *blist)
 {
-
-
+    // need to save this to a hashmap
+    Stats_create(blist->entry[1]);
+    printf("Just created stat with name: %s\n", bdata(blist->entry[1]));
 
 }
 
 int get_mean(struct bstrList *blist)
 {
-
-
+    printf("PRINTING: this is the get_mean\n");
 
     return 1;
 }
 
 int update_sample(struct bstrList *blist)
 {
-
-
-
+    printf("PRINTING: this is the update_sample\n");
 
     return 1;
 }
 
 int delete_sample(struct bstrList *bstr)
 {
-
-
+    printf("PRINTING: this is the delete_sample\n");
 
     return 1;
 }
 
 int dump(struct bstrList *bstr)
 {
-
+    printf("PRINTING: dump\n");
 
     return 1;
 }
@@ -140,36 +131,52 @@ error:
     return sockfd;
 }
 
-void add_routes(TSTree * tree, List routes)
+void add_routes(TSTree * tree, char **arr)
 {
-    //build the TSTree in here
+    int i = 0;
 
+    for (i = 0; i < 6; i++) {
+        TSTree_insert(tree,
+                arr[i], 
+                strlen(arr[i]), 
+                arr[i]);
+    }
 }
 
 struct bstrList *input_parser(RingBuffer *recv_rb)
 {
+    printf("In the input_parser.\n");
     bstring data = NULL;
-   
     data = RingBuffer_gets(recv_rb, RingBuffer_available_data(recv_rb));
 
     struct bstrList *blist = bsplit(data, '\0');
+    
+    printf("These bstrings... %s\n", bdata(blist->entry[0]));    
     return blist;
+    
 }
 
-void url_router(TSTree * routes, struct bstrList *blist)
+void url_router(struct bstrList *blist)
 {
+    bstring a, b, c, d, e;
     bstring url = blist->entry[0];
-    bstring route = TSTree_search(routes, bdata(url), blength(url));
 
-    if(route == bfromcstr(CREATE)){
+    a = bfromcstr("/create\n"); 
+    b = bfromcstr("/mean\n");
+    c = bfromcstr("/upsample\n");
+    d = bfromcstr("/delete\n");
+    e = bfromcstr("/dump\n");
+
+    printf("this is our url: %s\n", bdata(url));
+    if(biseq(url, a) == 1){
         create_stat(blist);        
-    } else if(route == bfromcstr(MEAN)){
+    } else if(biseq(url, b) == 1){
         get_mean(blist); 
-    } else if(route == bfromcstr(UPSAMP)){
+    } else if(biseq(url, c) == 1){
         update_sample(blist); 
-    } else if(route == bfromcstr(DELETE)){
+    } else if(biseq(url, d) == 1){
         delete_sample(blist);
-    } else if(route == bfromcstr(DUMP)){
+    } else if(biseq(url, e) == 1){
         dump(blist); 
     }
 }
@@ -178,16 +185,14 @@ void client_handler(int comm_fd)
 {
     RingBuffer *send_rb = RingBuffer_create(RB_SIZE);
     RingBuffer *recv_rb = RingBuffer_create(RB_SIZE);
-    TSTree *routes = NULL;
 
-    // echo functions
+    //add_routes(routes, routes_array);
+
     read_some(recv_rb, comm_fd, 1);
-    parse_line(recv_rb, send_rb);    
-    write_some(send_rb, comm_fd, 1);
+   // parse_line(recv_rb, send_rb);    
 
-    // hit the parser so that we can read the command
     struct bstrList *blist = input_parser(recv_rb);
-    url_router(routes, blist);
+    url_router(blist);
 
     // The Parser will then route you to one of our four CRUD operations
         // it may/may not make sense to externalize the data structure 
@@ -201,9 +206,7 @@ void client_handler(int comm_fd)
     // sent back to the client ayyy
 
     //now fucking write it to the send_rb
-    
-    //rc = RingBuffer_write(send_rb, bdata(data), blength(data));
-
+    write_some(send_rb, comm_fd, 1);
 }
 
 int run_server(const char *host, const char *port)
