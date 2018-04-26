@@ -81,6 +81,15 @@ Sketch For Statistics Protocol
 * The first three are going to need two paramters: Name of statistic, and it's values
 * Let's just parse as plaintext first and then implement the URL routes (although that is better)
 
-- Goal for today:
-    * Get the parser working
-    * show this by printing messages based on function hit
+
+TODAY
+=====
+* The URL's are successfully routing to the right functions
+* This is not utilizing the TSTree, because that turn out to be as
+hard as I initially though. All the same, it's wired up, once I figure that out
+* The next step is going to be to throw in the stats functions, which will be easy
+since they are already there
+* The next tricky part that I foresee is simple going to be saving shit to the map
+* Also, it will have to pull from the map and send that back. If data isn't being pulled,
+there should still be return messages though.
+

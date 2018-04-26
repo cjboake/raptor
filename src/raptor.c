@@ -24,11 +24,19 @@
 
 #define RB_SIZE 1024 * 10
 
-void create_stat(struct bstrList *blist)
+void create_stat(Hashmap * map, struct bstrList *blist)
 {
+    //printf("We made it to the target method. This is our url: %s\n", bdata(blist->entry[1]));
     // need to save this to a hashmap
-    Stats_create(blist->entry[1]);
-    printf("Just created stat with name: %s\n", bdata(blist->entry[1]));
+    //Stats_create(blist->entry[1]);
+    
+    //Hashmap_set(map, blist->entry[1], blist->entry[2]);
+
+    printf("Here are the blist entries:\n");
+        
+    printf("Here are the blist entry 1: %s\n", bdata(blist->entry[0]));
+    printf("Here are the blist entry 2: %s\n", bdata(blist->entry[1]));
+    printf("Here are the blist entry 3: %s\n", bdata(blist->entry[2]));
 
 }
 
@@ -148,28 +156,31 @@ struct bstrList *input_parser(RingBuffer *recv_rb)
     printf("In the input_parser.\n");
     bstring data = NULL;
     data = RingBuffer_gets(recv_rb, RingBuffer_available_data(recv_rb));
+    
+    bstring a = bfromcstr("\0"); 
 
-    struct bstrList *blist = bsplit(data, '\0');
+    struct bstrList *bist = bsplit(data, ' ');
     
-    printf("These bstrings... %s\n", bdata(blist->entry[0]));    
-    return blist;
+    printf("These bstrings... %s\n", bdata(bist->entry[0]));    
     
+    return bist;
 }
 
-void url_router(struct bstrList *blist)
+void url_router(Hashmap * map, struct bstrList *blist)
 {
     bstring a, b, c, d, e;
     bstring url = blist->entry[0];
 
-    a = bfromcstr("/create\n"); 
+    printf("Made it into url_router: %s\n", bdata(blist->entry[0]));
+
+    a = bfromcstr("/create"); 
     b = bfromcstr("/mean\n");
     c = bfromcstr("/upsample\n");
     d = bfromcstr("/delete\n");
     e = bfromcstr("/dump\n");
 
-    printf("this is our url: %s\n", bdata(url));
     if(biseq(url, a) == 1){
-        create_stat(blist);        
+        create_stat(map, blist);        
     } else if(biseq(url, b) == 1){
         get_mean(blist); 
     } else if(biseq(url, c) == 1){
@@ -185,14 +196,15 @@ void client_handler(int comm_fd)
 {
     RingBuffer *send_rb = RingBuffer_create(RB_SIZE);
     RingBuffer *recv_rb = RingBuffer_create(RB_SIZE);
-
+    Hashmap *map = Hashmap_create(NULL, NULL);
     //add_routes(routes, routes_array);
 
     read_some(recv_rb, comm_fd, 1);
    // parse_line(recv_rb, send_rb);    
 
     struct bstrList *blist = input_parser(recv_rb);
-    url_router(blist);
+   
+    url_router(map, blist);
 
     // The Parser will then route you to one of our four CRUD operations
         // it may/may not make sense to externalize the data structure 
