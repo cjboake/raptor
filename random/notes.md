@@ -93,3 +93,15 @@ since they are already there
 * Also, it will have to pull from the map and send that back. If data isn't being pulled,
 there should still be return messages though.
 
+
+Working Hashmap Set and Retrieval
+=================================
+bstring node = Hashmap_get(map, blist->entry[1]);
+printf("This one is a longshot: %s\n", bdata(node));
+
+Stats *node = Hashmap_get(map, blist->entry[1]);
+printf("This one is a longshot: %lf\n", node->max);
+
+int data = atoi(bdata(blist->entry[2]));
+printf("This is our data: %d\n", data); // such wow
+
