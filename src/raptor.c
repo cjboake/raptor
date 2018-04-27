@@ -24,20 +24,27 @@
 
 #define RB_SIZE 1024 * 10
 
+//bstring node = Hashmap_get(map, blist->entry[1]);
+ //   printf("This one is a longshot: %s\n", bdata(node));
+
+
 void create_stat(Hashmap * map, struct bstrList *blist)
 {
-    //printf("We made it to the target method. This is our url: %s\n", bdata(blist->entry[1]));
-    // need to save this to a hashmap
-    //Stats_create(blist->entry[1]);
-    
-    //Hashmap_set(map, blist->entry[1], blist->entry[2]);
-
     printf("Here are the blist entries:\n");
-        
     printf("Here are the blist entry 1: %s\n", bdata(blist->entry[0]));
     printf("Here are the blist entry 2: %s\n", bdata(blist->entry[1]));
     printf("Here are the blist entry 3: %s\n", bdata(blist->entry[2]));
 
+    // need to save this to a hashmap
+    Stats *myStat = Stats_create();
+    
+    int data = atoi(bdata(blist->entry[2]));
+    printf("This is our data: %d\n", data); // such wow
+
+    Hashmap_set(map, blist->entry[1], myStat);
+
+    Stats *node = Hashmap_get(map, blist->entry[1]);
+    printf("This one is a longshot: %lf\n", node->max);
 }
 
 int get_mean(struct bstrList *blist)
