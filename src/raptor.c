@@ -16,6 +16,7 @@
 #include "./lib/stats.h"
 #include "./lib/list.h"
 #include "./lib/tstree.h"
+#include "./lib/darray.h"
 
 #define PORT 7899    // port to bind to
 #define BACKLOG 10   // max connections
@@ -33,28 +34,107 @@
 //int data = atoi(bdata(blist->entry[2]));
 //    printf("This is our data: %d\n", data); // such wow
 
-void create_stat(Hashmap * map, struct bstrList *blist)
+
+DArray *array = NULL;
+
+#define AS 2
+int numbers[AS];
+
+int svr(int *arr)
+{
+   int n;
+   struct threeNum num;
+   FILE *fptr;
+
+    
+   Stats *myStat = Stats_create(); 
+
+   if ((fptr = fopen("./data.bin","wb")) == NULL){
+       printf("Error! opening file");
+
+       // Program exits if the file pointer returns NULL.
+       exit(1);
+   }
+
+    fwrite(myStat, sizeof(Stats), 1, fptr); 
+    fclose(fptr); 
+  
+   return 0;
+}
+
+int read_data()
+{
+   
+    int n;
+    struct threeNum num;
+    FILE *fptr;
+    void *m;
+    int brr;
+    m = malloc(sizeof(brr));
+
+    printf("We are in the read data method.\n");
+
+    if ((fptr = fopen("./data.bin","rb")) == NULL){
+        printf("Error! opening file");
+    }
+
+    struct Stats stat_2;
+
+    fread(&stat_2, sizeof(int), 2, fptr); 
+    printf("This is the Stat, hope it works: %lf\n", stat_2.max);
+   
+    fclose(fptr);
+
+    return 0;
+}
+
+void create_stat(struct bstrList *blist)
 {
     printf("Here are the blist entries:\n");
     printf("Here are the blist entry 1: %s\n", bdata(blist->entry[0]));
-    printf("Here are the blist entry 2: %s\n", bdata(blist->entry[1]));
-    printf("Here are the blist entry 3: %s\n", bdata(blist->entry[2]));
+    //printf("Here are the blist entry 2: %s\n", bdata(blist->entry[1]));
+    //printf("Here are the blist entry 3: %s\n", bdata(blist->entry[2]));
 
-    Stats *myStat = Stats_create();
+    int dis = 98;
+    int *disint = &dis;
+
+    int arr[10];
+    arr[0] = 2;
+    arr[1] = 9;
+
+    svr(disint);
+
+   // Stats *myStat = Stats_create(); 
+   // // int val2 = 8;
+   // DArray_set(array, 0, &val2);
+
+
+   // int *val3 = DArray_get(array, 0);
+    printf("Here is the value we just saved to the new array: %d\n", numbers[0]);
+    //Hashmap_set(map, blist->entry[1], myStat);
+
     
-    Hashmap_set(map, blist->entry[1], myStat);
 }
 
 int get_mean(struct bstrList *blist)
 {
     printf("PRINTING: this is the get_mean\n");
-
     return 1;
 }
 
 int update_sample(struct bstrList *blist)
 {
     printf("PRINTING: this is the update_sample\n");
+
+    printf("Here is the mysterious array value: %d", numbers[0]); 
+    
+    int *val3 = DArray_get(array, 0);
+    if(array != NULL)
+        printf("The array itself is still there\n");
+    if(val3 != NULL)
+        printf("We are retrieving from update sample: %p\n", val3);
+    if(val3 == NULL)
+        printf("That shit was null.\n");
 
     return 1;
 }
@@ -179,15 +259,15 @@ void url_router(Hashmap * map, struct bstrList *blist)
     printf("Made it into url_router: %s\n", bdata(blist->entry[0]));
 
     a = bfromcstr("/create"); 
-    b = bfromcstr("/mean\n");
-    c = bfromcstr("/upsample\n");
-    d = bfromcstr("/delete\n");
-    e = bfromcstr("/dump\n");
+    b = bfromcstr("/mean");
+    c = bfromcstr("/upsample");
+    d = bfromcstr("/delete");
+    e = bfromcstr("/dump");
 
     if(biseq(url, a) == 1){
-        create_stat(map, blist);        
+        create_stat(blist);        
     } else if(biseq(url, b) == 1){
-        get_mean(blist); 
+        read_data(); 
     } else if(biseq(url, c) == 1){
         update_sample(blist); 
     } else if(biseq(url, d) == 1){
@@ -251,6 +331,8 @@ int run_server(const char *host, const char *port)
 
     sockfd = server_listen(host, port); 
 
+    array = DArray_create(sizeof(int), 100);    
+    //int *val1 = DArray_new(array);
     while(1)
     {
         comm_fd = accept(sockfd, (struct sockaddr *)&client_addr, &sin_size);
