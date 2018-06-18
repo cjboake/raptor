@@ -48,7 +48,7 @@ void blist_print(struct bstrList * blist)
         printf("Here are the blist entry 2: %s\n", bdata(blist->entry[2]));
 }
 
-int svr()
+int svr(Stats *new_stat)
 {
     FILE *fptr;
     int rc = 0;
@@ -61,10 +61,6 @@ int svr()
         exit(1);
     }
 
-    Stats *new_stat = Stats_create(); 
-    new_stat->max = 3.34657;
-    //int i = 84;
-    // fwrite(&i, sizeof(int), 1, fptr); 
     fwrite(new_stat, sizeof(Stats), 1, fptr);
 
     fclose(fptr); 
@@ -96,7 +92,7 @@ int read_data(struct bstrList *blist)
 
     fread(&stat_read, sizeof(Stats), 1, fptr); 
     
-    printf("This is the Stat, hope it works: %lf\n", stat_read.max);
+    printf("This is the Stat, hope it works: %s\n", stat_read.name);
    
     fclose(fptr);
     free(map_read);
@@ -104,16 +100,35 @@ int read_data(struct bstrList *blist)
     return 0;
 }
 
+Stats get_stat()
+{
+    FILE *fptr;
+
+    printf("We are in the get_stat method.\n");
+
+    if ((fptr = fopen("./data.bin","rb")) == NULL){
+        printf("Error! opening file");
+    }
+
+    struct Stats stat_read;
+    fread(&stat_read, sizeof(Stats), 1, fptr); 
+    
+    printf("This is the Stat from get_stat: %s\n", stat_read.name);
+   
+    fclose(fptr);
+    return stat_read;
+    
+}
+
 void create_stat(struct bstrList *blist)
 {
     printf("Made it into create_stat\n");
     
-    //Stats *new_stat = Stats_create(); 
-    
-    //new_stat->name = bdata(blist->entry[1]); 
+    Stats *mk_stat = Stats_create(); 
+    mk_stat->name = bdata(blist->entry[1]); 
     
     //Hashmap_set(MAP, new_stat->name, new_stat);    
-    svr();
+    svr(mk_stat);
 }
 
 int get_mean(struct bstrList *blist)
@@ -126,6 +141,9 @@ int update_sample(struct bstrList *blist)
 {
     printf("PRINTING: this is the update_sample\n");
     
+    Stats ret = get_stat();
+    //Stats_sample()
+
     return 1;
 }
 
